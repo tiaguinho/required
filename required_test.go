@@ -1,56 +1,69 @@
-package required
+package required_test
 
 import (
 	"testing"
+	"github.com/tiaguinho/required"
 	"reflect"
 )
 
 var (
-	defaultMessage = "this field is required"
+	c = required.Message{
+		Field: "C",
+		ErrMsg: "where is the value?",
+	}
+
+	d = required.Message{
+		Field: "default",
+		ErrMsg: "this field is required",
+	}
 )
 
 type I struct {
-	Default    int  `json:"default" required:"-"`
-	Custom     int  `required:"where is the number?"`
+	C    int  `required:"where is the number?"`
+	D    int  `json:"default" required:"-"`
+	N    int  `json:"do_not_check"`
 }
 
-//
-func TestValidateInt(t *testing.T) {
+func TestValidate(t *testing.T) {
 	v := I{}
 
-	dm := Message {
-		Field: "default",
-		Message: defaultMessage,
-	}
+	if err := required.Validate(v); err != nil {
+		sm := make([]required.Message, 2)
+		sm[0] = c
+		sm[1] = d
 
-	cm := Message{
-		Field: "Custom",
-		Message: "where is the number?",
-	}
-
-	if msgs, err := Validate(v); err != nil {
-		arr := make([]Message, 0)
-		arr = append(arr, dm, cm)
-
-		if !reflect.DeepEqual(arr, msgs) {
-			t.Errorf("\n expected: %+v \n got: %+v", arr, msgs)
+		e := required.New(sm...)
+		if e == err {
+			t.Errorf("\n expected: \n %s \n got: \n %s", e, err)
 		}
 	}
 
-	v.Default = 100
-	v.Custom = 0
-	if msgs, err := Validate(v); err != nil {
-		arr := make([]Message, 0)
-		arr = append(arr, cm)
+	v.D = 100
+	v.C = 100
 
-		if !reflect.DeepEqual(arr, msgs) {
-			t.Errorf("\n expected: %+v \n got: %+v", arr, msgs)
+	err := required.Validate(v)
+	if err != nil {
+		t.Errorf("\n no error message expected \n got: \n %s", err)
+	}
+}
+
+func TestValidateWithMessage(t *testing.T) {
+	v := I{}
+
+	if err, msg := required.ValidateWithMessage(v); err != nil {
+		sm := make([]required.Message, 0)
+		sm = append(sm, d, c)
+
+		if reflect.DeepEqual(sm, msg) {
+			t.Errorf("\n expected: \n %s \n got: \n %s", sm, msg)
 		}
 	}
 
-	v.Default = 100
-	v.Custom = 100
-	if msgs, err := Validate(v); err != nil {
-		t.Errorf("\n no error message expected \n got: %+v", msgs)
+	v.D = 100
+	v.C = 100
+
+	err, msg := required.ValidateWithMessage(v)
+	if err != nil || len(msg) > 0 {
+		t.Errorf("\n no error message expected \n got: \n %s \n %+v", err, msg)
 	}
 }

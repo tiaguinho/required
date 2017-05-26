@@ -28,13 +28,18 @@ func (e *errorMessages) Error() (msg string) {
 // this can be return in some API implementation, where frontend can
 // use this information to highlight the field and display the error message
 type Message struct {
+	Index   int    `json:"index,omitempty"`
 	Field   string `json:"field" xml:"field"`
 	ErrMsg  string `json:"message" xml:"message"`
 }
 
 // Validate return error if any field is left empty
 func Validate(v interface{}) error {
-	sm := checkFields(reflect.ValueOf(v))
+	if reflect.TypeOf(v).Kind() != reflect.Struct {
+		return fmt.Errorf("only struct can be validated")
+	}
+
+	sm := structFields(reflect.ValueOf(v))
 	if len(sm) == 0 {
 		return nil
 	}
@@ -43,41 +48,75 @@ func Validate(v interface{}) error {
 
 // ValidateWithMessage return error and slice of message if any field is left empty
 func ValidateWithMessage(v interface{}) (error, []Message) {
-	sm := checkFields(reflect.ValueOf(v))
+	if reflect.TypeOf(v).Kind() != reflect.Struct {
+		return fmt.Errorf("only struct can be validated"), []Message{}
+	}
+
+	sm := structFields(reflect.ValueOf(v))
 	if len(sm) == 0 {
 		return nil, sm
 	}
 	return &errorMessages{sm}, sm
 }
 
-// checkFields check the type of field and if the field has a required tag
-func checkFields(v reflect.Value) []Message {
-	sm := make([]Message, 0)
-	for i := 0; i < v.NumField(); i++ {
-		if v.Field(i).Kind() != reflect.Ptr && v.Field(i).Kind() != reflect.Struct {
-			if s, ok := v.Type().Field(i).Tag.Lookup("required"); ok {
-				if isEmpty(v.Field(i)) {
-					m := Message{
-						Field:   getFieldName(v.Type().Field(i)),
-						ErrMsg: "this field is required",
-					}
-
-					if s != "-" {
-						m.ErrMsg = s
-					}
-
-					sm = append(sm, m)
-				}
-			}
-		} else {
-			a := checkFields(v.Field(i))
-			if len(a) > 0 {
-				sm = append(sm, a...)
-			}
+// structFields check the type of field and if the field has a required tag
+func structFields(v reflect.Value) []Message {
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+		if v.Kind() != reflect.Struct {
+			return []Message{}
 		}
 	}
 
-	return sm
+	m := make([]Message, 0)
+	for i := 0; i < v.NumField(); i++ {
+		f := v.Field(i)
+
+		if f.Kind() == reflect.Ptr {
+			f = f.Elem()
+		}
+
+		if f.Kind() == reflect.Struct {
+			a := structFields(f)
+			if len(a) > 0 {
+				m = append(m, a...)
+			}
+
+			continue
+		}
+
+		if f.Kind() == reflect.Slice && f.Len() > 0 {
+			for x := 0; x < f.Len(); x++ {
+				a := structFields(f.Index(x))
+				if len(a) > 0 {
+					m = append(m, a...)
+				}
+			}
+
+			continue
+		}
+
+		s, ok := v.Type().Field(i).Tag.Lookup("required");
+		if  !ok {
+			continue
+		}
+
+		if isEmpty(f) {
+			msg := Message{
+				Index: i,
+				Field: getFieldName(v.Type().Field(i)),
+				ErrMsg: "this field is required",
+			}
+
+			if s != "-" {
+				msg.ErrMsg = s
+			}
+
+			m = append(m, msg)
+		}
+	}
+
+	return m
 }
 
 // isEmpty check if the field value is empty
@@ -97,6 +136,12 @@ func isEmpty(v reflect.Value) bool {
 
 	case reflect.String:
 		return v.String() == ""
+
+	case reflect.Map:
+		return len(v.MapKeys()) == 0
+
+	case reflect.Slice:
+		return v.Len() == 0
 	}
 
 	return false

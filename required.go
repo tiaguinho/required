@@ -61,13 +61,6 @@ func ValidateWithMessage(v interface{}) ([]Message, error) {
 
 // structFields check the type of field and if the field has a required tag
 func structFields(v reflect.Value) []Message {
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-		if v.Kind() != reflect.Struct {
-			return []Message{}
-		}
-	}
-
 	m := make([]Message, 0)
 	for i := 0; i < v.NumField(); i++ {
 		f := v.Field(i)

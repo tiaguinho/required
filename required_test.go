@@ -1,6 +1,7 @@
 package required_test
 
 import (
+	"fmt"
 	"github.com/tiaguinho/required"
 	"reflect"
 	"testing"
@@ -30,10 +31,23 @@ type A struct {
 	S string `json:"s" required:"don't left this field blank!'"`
 }
 
+func TestError(t *testing.T) {
+	e := required.New(required.Message{Index: 0, Field: "test", ErrMsg: "test message"})
+	if e.Error() != fmt.Sprintf("[%s]: %s \n", "test", "test message") {
+		t.Errorf("got: %s", e)
+	}
+
+}
+
 func TestValidate(t *testing.T) {
+	err := required.Validate("")
+	if err == nil {
+		t.Errorf("error expected! returned nil.%s", err)
+	}
+
 	v := T{}
 
-	err := required.Validate(v)
+	err = required.Validate(v)
 	if err == nil {
 		t.Error("error expected! returned nil.")
 	}
@@ -68,9 +82,14 @@ func TestValidate(t *testing.T) {
 }
 
 func TestValidateWithMessage(t *testing.T) {
+	msg, err := required.ValidateWithMessage("")
+	if err == nil {
+		t.Errorf("error expected! returned nil.%s", err)
+	}
+
 	v := T{}
 
-	msg, err := required.ValidateWithMessage(v)
+	msg, err = required.ValidateWithMessage(v)
 	if err != nil {
 		sm := make([]required.Message, 2)
 		sm[0] = i

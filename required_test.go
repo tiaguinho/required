@@ -20,12 +20,14 @@ var (
 )
 
 type T struct {
-	I int     `required:"where is the number?"`
-	S string  `json:"default" required:"-"`
-	A []*A    `json:"array"`
-	N int     `json:"do_not_check"`
-	F float32 `xml:"float" required:"-"`
-	U uint8   `xml:"uint" required:"not empty"`
+	I int                    `required:"where is the number?"`
+	U uint8                  `xml:"uint" required:"not empty"`
+	F float32                `xml:"float" required:"-"`
+	C complex64              `xml:"complex" required:"-"`
+	S string                 `json:"default" required:"-"`
+	M map[string]interface{} `json:"map" required:"-"`
+	A []A                    `json:"array"`
+	N int                    `json:"do_not_check"`
 }
 
 type A struct {
@@ -63,8 +65,8 @@ func TestValidate(t *testing.T) {
 		t.Errorf("\n expected: \n %s \n got: \n %s", e, err)
 	}
 
-	v.A = make([]*A, 1)
-	v.A[0] = &A{
+	v.A = make([]A, 1)
+	v.A[0] = A{
 		I: 50,
 	}
 
@@ -74,10 +76,12 @@ func TestValidate(t *testing.T) {
 	}
 
 	v.I = 100
-	v.S = "ok"
-	v.A[0].S = "sub message"
-	v.F = 10.5
 	v.U = 1
+	v.F = 10.5
+	v.C = 1
+	v.S = "ok"
+	v.M = map[string]interface{}{"test": "ok"}
+	v.A[0].S = "sub message"
 
 	err = required.Validate(v)
 	if err != nil {
@@ -104,8 +108,8 @@ func TestValidateWithMessage(t *testing.T) {
 		}
 	}
 
-	v.A = make([]*A, 1)
-	v.A[0] = &A{
+	v.A = make([]A, 1)
+	v.A[0] = A{
 		I: 50,
 	}
 
@@ -115,10 +119,12 @@ func TestValidateWithMessage(t *testing.T) {
 	}
 
 	v.I = 100
-	v.S = "ok"
-	v.A[0].S = "sub message"
-	v.F = 10.5
 	v.U = 1
+	v.F = 10.5
+	v.C = 1
+	v.S = "ok"
+	v.M = map[string]interface{}{"test": "ok"}
+	v.A[0].S = "sub message"
 
 	msg, err = required.ValidateWithMessage(v)
 	if err != nil || len(msg) > 0 {

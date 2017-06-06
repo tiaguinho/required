@@ -1,8 +1,8 @@
 package required
 
 import (
-	"reflect"
 	"fmt"
+	"reflect"
 )
 
 // New returns an error with the messages passed in the param `sm`
@@ -28,9 +28,9 @@ func (e *errorMessages) Error() (msg string) {
 // this can be return in some API implementation, where frontend can
 // use this information to highlight the field and display the error message
 type Message struct {
-	Index   int    `json:"index,omitempty"`
-	Field   string `json:"field" xml:"field"`
-	ErrMsg  string `json:"message" xml:"message"`
+	Index  int    `json:"index,omitempty"`
+	Field  string `json:"field" xml:"field"`
+	ErrMsg string `json:"message" xml:"message"`
 }
 
 // Validate return error if any field is left empty
@@ -47,16 +47,16 @@ func Validate(v interface{}) error {
 }
 
 // ValidateWithMessage return error and slice of message if any field is left empty
-func ValidateWithMessage(v interface{}) (error, []Message) {
+func ValidateWithMessage(v interface{}) ([]Message, error) {
 	if reflect.TypeOf(v).Kind() != reflect.Struct {
-		return fmt.Errorf("only struct can be validated"), []Message{}
+		return []Message{}, fmt.Errorf("only struct can be validated")
 	}
 
 	sm := structFields(reflect.ValueOf(v))
 	if len(sm) == 0 {
-		return nil, sm
+		return sm, nil
 	}
-	return &errorMessages{sm}, sm
+	return sm, &errorMessages{sm}
 }
 
 // structFields check the type of field and if the field has a required tag
@@ -96,15 +96,15 @@ func structFields(v reflect.Value) []Message {
 			continue
 		}
 
-		s, ok := v.Type().Field(i).Tag.Lookup("required");
-		if  !ok {
+		s, ok := v.Type().Field(i).Tag.Lookup("required")
+		if !ok {
 			continue
 		}
 
 		if isEmpty(f) {
 			msg := Message{
-				Index: i,
-				Field: getFieldName(v.Type().Field(i)),
+				Index:  i,
+				Field:  getFieldName(v.Type().Field(i)),
 				ErrMsg: "this field is required",
 			}
 

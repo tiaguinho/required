@@ -1,28 +1,28 @@
 package required_test
 
 import (
-	"testing"
 	"github.com/tiaguinho/required"
 	"reflect"
+	"testing"
 )
 
 var (
 	i = required.Message{
-		Field: "I",
+		Field:  "I",
 		ErrMsg: "where is the value?",
 	}
 
 	s = required.Message{
-		Field: "default",
+		Field:  "default",
 		ErrMsg: "this field is required",
 	}
 )
 
 type T struct {
-	I    int     `required:"where is the number?"`
-	S    string  `json:"default" required:"-"`
-	A    []*A    `json:"array"`
-	N    int     `json:"do_not_check"`
+	I int    `required:"where is the number?"`
+	S string `json:"default" required:"-"`
+	A []*A   `json:"array"`
+	N int    `json:"do_not_check"`
 }
 
 type A struct {
@@ -34,7 +34,7 @@ func TestValidate(t *testing.T) {
 	v := T{}
 
 	err := required.Validate(v)
-	if  err == nil {
+	if err == nil {
 		t.Error("error expected! returned nil.")
 	}
 
@@ -49,7 +49,7 @@ func TestValidate(t *testing.T) {
 
 	v.A = make([]*A, 1)
 	v.A[0] = &A{
-		I:50,
+		I: 50,
 	}
 
 	err = required.Validate(v)
@@ -70,7 +70,7 @@ func TestValidate(t *testing.T) {
 func TestValidateWithMessage(t *testing.T) {
 	v := T{}
 
-	err, msg := required.ValidateWithMessage(v)
+	msg, err := required.ValidateWithMessage(v)
 	if err != nil {
 		sm := make([]required.Message, 2)
 		sm[0] = i
@@ -83,7 +83,7 @@ func TestValidateWithMessage(t *testing.T) {
 
 	v.A = make([]*A, 1)
 	v.A[0] = &A{
-		I:50,
+		I: 50,
 	}
 
 	err = required.Validate(v)
@@ -95,7 +95,7 @@ func TestValidateWithMessage(t *testing.T) {
 	v.S = "ok"
 	v.A[0].S = "sub message"
 
-	err, msg = required.ValidateWithMessage(v)
+	msg, err = required.ValidateWithMessage(v)
 	if err != nil || len(msg) > 0 {
 		t.Errorf("\n no error message expected \n got: \n %s \n %+v", err, msg)
 	}

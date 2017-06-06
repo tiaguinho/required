@@ -101,7 +101,7 @@ func structFields(v reflect.Value) []Message {
 			continue
 		}
 
-		if isEmpty(f) {
+		if isEmpty(f) || f.Kind() == reflect.Invalid {
 			msg := Message{
 				Index:  i,
 				Field:  getFieldName(v.Type().Field(i)),

@@ -1,4 +1,4 @@
-# Required [![Build Status](https://travis-ci.org/tiaguinho/required.svg?branch=master)](https://travis-ci.org/tiaguinho/required) [![GoDoc](https://godoc.org/github.com/tiaguinho/required?status.png)](https://godoc.org/github.com/tiaguinho/required) [![Go Report Card](https://goreportcard.com/badge/github.com/tiaguinho/required)](https://goreportcard.com/report/github.com/tiaguinho/required)
+# Required [![Build Status](https://travis-ci.org/tiaguinho/required.svg?branch=master)](https://travis-ci.org/tiaguinho/required) [![GoDoc](https://godoc.org/github.com/tiaguinho/required?status.png)](https://godoc.org/github.com/tiaguinho/required) [![Go Report Card](https://goreportcard.com/badge/github.com/tiaguinho/required)](https://goreportcard.com/report/github.com/tiaguinho/required) [![codecov](https://codecov.io/gh/tiaguinho/required/branch/master/graph/badge.svg)](https://codecov.io/gh/tiaguinho/required)
 Required is used to validate if the field value is empty
 
 ### Install

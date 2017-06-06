@@ -20,10 +20,12 @@ var (
 )
 
 type T struct {
-	I int    `required:"where is the number?"`
-	S string `json:"default" required:"-"`
-	A []*A   `json:"array"`
-	N int    `json:"do_not_check"`
+	I int     `required:"where is the number?"`
+	S string  `json:"default" required:"-"`
+	A []*A    `json:"array"`
+	N int     `json:"do_not_check"`
+	F float32 `xml:"float" required:"-"`
+	U uint8   `xml:"uint" required:"not empty"`
 }
 
 type A struct {
@@ -74,6 +76,8 @@ func TestValidate(t *testing.T) {
 	v.I = 100
 	v.S = "ok"
 	v.A[0].S = "sub message"
+	v.F = 10.5
+	v.U = 1
 
 	err = required.Validate(v)
 	if err != nil {
@@ -113,6 +117,8 @@ func TestValidateWithMessage(t *testing.T) {
 	v.I = 100
 	v.S = "ok"
 	v.A[0].S = "sub message"
+	v.F = 10.5
+	v.U = 1
 
 	msg, err = required.ValidateWithMessage(v)
 	if err != nil || len(msg) > 0 {

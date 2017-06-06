@@ -45,7 +45,7 @@ func main() {
          LastName: "Required",
      }
      
-     if err, msg := required.ValidateWithMessage(t); err != nil {
+     if msg, err := required.ValidateWithMessage(t); err != nil {
          log.Println(err, msg)
      }
 }

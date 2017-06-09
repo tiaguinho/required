@@ -28,6 +28,7 @@ type T struct {
 	M map[string]interface{} `json:"map" required:"-"`
 	A []A                    `json:"array" required:"-"`
 	P *A                     `json:"ptr" required:"pointer is empty"`
+	T A                      `json:"struct" required:"-"`
 	N int                    `json:"do_not_check"`
 }
 
@@ -83,7 +84,8 @@ func TestValidate(t *testing.T) {
 	v.S = "ok"
 	v.M = map[string]interface{}{"test": "ok"}
 	v.A[0].S = "sub message"
-	v.P = &A{I: 10, S: "TESTE"}
+	v.P = &A{I: 10, S: "TEST"}
+	v.T = A{I: 1, S: "OK"}
 
 	err = required.Validate(v)
 	if err != nil {
@@ -127,7 +129,8 @@ func TestValidateWithMessage(t *testing.T) {
 	v.S = "ok"
 	v.M = map[string]interface{}{"test": "ok"}
 	v.A[0].S = "sub message"
-	v.P = &A{I: 10, S: "TESTE"}
+	v.P = &A{I: 10, S: "TEST"}
+	v.T = A{I: 1, S: "OK"}
 
 	msg, err = required.ValidateWithMessage(v)
 	if err != nil || len(msg) > 0 {
